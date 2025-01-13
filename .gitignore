@@ -3,3 +3,6 @@ node_modules/
 
 #Temp files
 .DS_Store
+
+# e2e test folder is excluded
+test_results/

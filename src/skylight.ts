@@ -1,27 +1,8 @@
 import http from "k6/http";
-import { sleep } from "k6";
+import { sleep, check, fail } from "k6";
+import { options } from "./common.ts";
 
-export const options: {
-  cloud: {
-    distribution: {
-      [key: string]: {
-        loadZone: string;
-        percent: number;
-      };
-    };
-  };
-  vus: number;
-  duration: string;
-} = {
-  cloud: {
-    distribution: {
-      // distributionLabel1: { loadZone: "amazon:sa:cape town", percent: 100 },
-      distributionLabel2: { loadZone: "amazon:us:portland", percent: 100 },
-    },
-  },
-  vus: 1,
-  duration: "10s",
-};
+export { options };
 
 export default function (): void {
   /*
@@ -29,7 +10,7 @@ export default function (): void {
   https://grafana.com/docs/k6/latest/using-k6/environment-variables/
   */
   const url =
-    `${__ENV.PUBLIC_API_URL}/` + "graphql" ||
+    `${__ENV.PUBLIC_API_URL}/graphql` ||
     "https://api-int.skylight.earth/graphql";
   const query = `{
     query: vessel(
@@ -40,12 +21,29 @@ export default function (): void {
     }`;
   const payload = JSON.stringify({ query });
 
+  if (!__ENV.AUTH_TOKEN) {
+    console.error("AUTH_TOKEN is not defined. Skipping the request.");
+    return;
+  }
+
   const params = {
     headers: {
       Authorization: `Bearer ${__ENV.AUTH_TOKEN}`,
       "Content-Type": "application/json",
     },
   };
-  http.post(url, payload, params);
+
+  const response = http.post(url, payload, params);
+
+  // Validate response status
+  const success = check(response, {
+    "response status is 200": (r) => r.status === 200,
+  });
+
+  if (!success) {
+    console.error(`Request failed with status ${response.status}`);
+    fail("Request failed");
+  }
+
   sleep(1);
 }

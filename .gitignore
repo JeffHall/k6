@@ -1,8 +1,11 @@
-# all node_modules folders are excluded
+# All node_modules folders are excluded
 node_modules/
 
-#Temp files
+# Temp files
 .DS_Store
 
 # e2e test folder is excluded
 test_results/
+
+# Visual Studio Code
+.vscode/

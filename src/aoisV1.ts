@@ -6,12 +6,18 @@ export { options };
 
 export default function (): void {
   const query = `{
-    query: vessel(
-    vesselId: "B:224933000:1681376115:1580146:1000022"
-    ) {
-    vessel_id flag_code mmsi
-    }
-    }`;
+                  query: 
+                    aoi {
+                      geometry{
+                        type 
+                        coordinates
+                      }
+                      properties {
+                        aoi_id 
+                        name
+                      }
+                    }
+                  }`;
   const payload = JSON.stringify({ query });
 
   const response = http.post(url, payload, params);

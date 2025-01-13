@@ -62,6 +62,12 @@ if (!__ENV.AUTH_TOKEN) {
   );
 }
 
+if (!__ENV.PUBLIC_API_URL) {
+  throw new Error(
+    "PUBLIC_API_URL is not defined. Please set the PUBLIC_API_URL environment variable."
+  );
+}
+
 export const url =
   `${__ENV.PUBLIC_API_URL}/graphql` || "https://api-int.skylight.earth/graphql";
 

@@ -1,0 +1,13 @@
+{
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/k6": "^0.54.2",
+    "@types/node": "^18.19.70",
+    "@typescript-eslint/eslint-plugin": "^8.19.1",
+    "@typescript-eslint/parser": "^8.19.1",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.19.1"
+  }
+}

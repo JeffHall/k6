@@ -1,26 +1,37 @@
-export const options: {
+import { check, fail } from "k6";
+
+interface CloudDistribution {
+  [key: string]: {
+    loadZone: string;
+    percent: number;
+  };
+}
+
+interface ScenarioConfig {
+  executor: string;
+  vus: number;
+  iterations: number;
+  startTime: string;
+}
+
+interface Thresholds {
+  [key: string]: string[];
+}
+
+interface K6Options {
   cloud: {
-    distribution: {
-      [key: string]: {
-        loadZone: string;
-        percent: number;
-      };
-    };
+    distribution: CloudDistribution;
   };
   scenarios: {
-    [key: string]: {
-      executor: string;
-      vus: number;
-      iterations: number;
-      startTime: string;
-    };
+    [key: string]: ScenarioConfig;
   };
-  thresholds: {
-    [key: string]: string[];
-  };
-} = {
+  thresholds: Thresholds;
+}
+
+export const options: K6Options = {
   cloud: {
     distribution: {
+      // Tests can only use multiple load zones with a paid k6 Grafana Cloud account
       // distributionLabel1: { loadZone: "amazon:sa:cape town", percent: 100 },
       distributionLabel2: { loadZone: "amazon:us:portland", percent: 100 },
     },
@@ -40,3 +51,38 @@ export const options: {
     http_req_duration: ["p(99)<500"], // 99% of requests should be below 500ms
   },
 };
+
+/*
+  K6 uses a specific syntax for reading env variables:
+  https://grafana.com/docs/k6/latest/using-k6/environment-variables/
+*/
+if (!__ENV.AUTH_TOKEN) {
+  throw new Error(
+    "AUTH_TOKEN is not defined. Please set the AUTH_TOKEN environment variable."
+  );
+}
+
+export const url =
+  `${__ENV.PUBLIC_API_URL}/graphql` || "https://api-int.skylight.earth/graphql";
+
+export const params = {
+  headers: {
+    Authorization: `Bearer ${__ENV.AUTH_TOKEN}`,
+    "Content-Type": "application/json",
+  },
+};
+
+interface Response {
+  status: number;
+}
+
+export function validateResponse(response: Response): void {
+  const success = check(response, {
+    "response status is 200": (r: Response) => r.status === 200,
+  });
+
+  if (!success) {
+    console.error(`Request failed with status ${response.status}`);
+    fail("Request failed");
+  }
+}
